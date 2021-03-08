@@ -50,7 +50,13 @@ class WaveNet(nn.Module):
         self.conv3d_3 = Conv3d(128, 256, 3, 2, 1, 'tanh')
         self.conv3d_4 = Conv3d(256, 512, 3, 2, 1, 'tanh')
         self.conv3d_5 = Conv3d(512, 128, 1, 1, 0, 'tanh')
-        self.fcn_1 = FCN(3072, 1024, 'tanh')
+        # voxel of size-input of fcn_1-result
+        # (50, 50, 50) -8192          -0.0736
+        # (50, 37, 25) -3072          -0.0809
+        # (40, 30, 20) -1536          -0.0961
+        # (30, 22, 15) -512           -0.1009
+        # (40, 40, 40) -3456          -0.0811
+        # self.fcn_1 = FCN(3456, 1024, 'tanh')
         self.fcn_2 = FCN(1024, 384, 'tanh')
         self.fcn_3 = FCN(384, cout, 'tanh')
 
@@ -62,8 +68,9 @@ class WaveNet(nn.Module):
         x = self.conv3d_3(x)
         x = self.conv3d_4(x)
         x = self.conv3d_5(x)
+        B, C, D, H, W = x.shape
+        self.fcn_1 = FCN(B * C * D * H * W, 1024, 'tanh')
         x = self.fcn_1(x)
         x = self.fcn_2(x)
         x = self.fcn_3(x)
         return x
-

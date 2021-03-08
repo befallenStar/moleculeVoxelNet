@@ -25,13 +25,17 @@ def weights_init(m):
         m.bias.data.zero_()
 
 
-def train(net='voxel', epochs=80, scale='medium'):
+def train(net='voxel', epochs=5, scale='medium', size=None):
+    if size is None:
+        size = [36, 36, 36]
     try:
         # load atoms of ase formatter from ase.db
         # qm9 = load_db(path='ase_data', ase_db='qm9.db')
         qm9, propertieses, datas = load_db(path='ase_data',
                                            ase_db='qm9_{}_{}.db'.format(
                                                feature_length, scale))
+
+        D, H, W = size
 
         # create a VoxelNet object
         if net == 'voxel':
@@ -61,7 +65,7 @@ def train(net='voxel', epochs=80, scale='medium'):
                 properties = propertieses[i]
                 # data = datas[i]
                 # iterate the atoms
-                voxel = load_voxel(atoms, 46, 33, 21, sigma=2)
+                voxel = load_voxel(atoms, D, H, W, sigma=2)
                 # print("voxel: " + str(voxel.shape))
                 # wrapper to variable
                 voxel_features = Variable(torch.FloatTensor(voxel))
@@ -103,7 +107,6 @@ def train(net='voxel', epochs=80, scale='medium'):
         plt.savefig(r'./img/voxelnet_{}_{:.4f}.png'.format(strftime('%Y-%m-%d'),
                                                            w_mae))
         plt.show()
-
         # save the model
         # torch.save(net,'model/aseVoxelNet-1.pkl')
     except ValueError as e:
@@ -112,4 +115,4 @@ def train(net='voxel', epochs=80, scale='medium'):
 
 if __name__ == '__main__':
     # train(net='wave', epochs=10, scale='medium')
-    train(net='wave', epochs=1, scale='full')
+    train(net='wave', epochs=1, scale='medium', size=[36,36,36])
